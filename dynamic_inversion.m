@@ -2,7 +2,7 @@ close all
 clear all 
 clc 
 % physical constants
-%global g m L Ixx Iyy Izz k b kzd kd kzp kp ki I kzi         
+% global g m L Ixx Iyy Izz k b         
 g = 9.81; 
 M = 0.5; 
 L = 0.25;
