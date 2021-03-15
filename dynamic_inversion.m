@@ -43,9 +43,8 @@ posdot = zeros(3,1000);
 posddot = zeros(3,1000);
 euler = pi./180*[-10 10 5]';
 euler_dot  = [0 0 0]';
-%cos(euler(1,1))
-%Simulation
 
+%Simulation
 
 %R = [cos(euler(3,k))*cos(euler(2,k)) cos(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))-sin(euler(3,k))*cos(euler(1,k)) cos(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))+sin(euler(3,k))*sin(euler(1,k));
 %     sin(euler(3,k))*cos(euler(2,k)) sin(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))+cos(euler(3,k))*cos(euler(1,k)) sin(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))-cos(euler(3,k))*sin(euler(1,k));
