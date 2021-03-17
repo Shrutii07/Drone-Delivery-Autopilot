@@ -43,11 +43,11 @@ posddot = [0 0 0]';
 euler = pi./180*[-10 5 10]';
 euler_dot  = [0 0 0]';
 
+% sway angle alpha y dir beta x dir
 sway = [0.2 0.15]';
 sway_dot = [0 0]';
 sway_ddot = [0 0]';
 
-%cos(euler(1,1))
 %Simulation
 dt = 0.01;
 for k = 1:3000
