@@ -13,7 +13,7 @@ b = 10^-7;
 I = diag([Ixx Iyy Izz]);
 
 %constants
-Kv = [0.63 ;0.63; 31.5];  %for positions
+Kv = [0.63 ; 0.63; 31.5];  %for positions
 Kp = [0.1225 ; 0.1225; 6.125];
 Kpe = [6; 5.2; 7];      %for eular angles
 Kpw = [4; 3; 4.9];       % for w
