@@ -1,0 +1,145 @@
+close all
+clear all 
+clc 
+
+%initial positons velocities
+x = [0;0;0];           % x, y, z fixed frame
+euler = [ 10;20;30];   % pitch,roll,yaw fixed frame
+v = [2;0;1];           % trans vel body frame
+omega = [0;0;2];       % rot vel body frame
+F1 = 0;
+F2 = 0;
+F3 = 0;
+F4 = 0;
+
+%desired
+x_des = [1;2;3];  %fixed frame
+x_ddes = [0;0;4];  
+euler_des = [0;0;60];
+euler_ddes = [0;0;0];   
+x1_des = [x_des(1);x_des(2)];
+x1_ddes = [ x_ddes(1);x_ddes(2)];
+x5_des = [euler_des(3);x_des(3)];
+x5_ddes = [euler_ddes(3);x_ddes(3)];
+
+%constant
+Kt = diag([10^-2 10^-2 10^-2]);
+Kr = diag([10^-3 10^-3 10^-3]);
+m = 2;
+d = 0.2;
+c = 0.01;
+g = 9.81;
+Ix = 1.2416; Iy = 1.2416;
+Iz = 2*1.2416;
+It = diag([Ix Iy Iz]);
+A1 = [3,0;0,3];
+A2 = [3,0;0,3];
+A3 = [3,0;0,3];
+A4 = [3,0;0,3];
+A5 = [3,0;0,3];
+A6 = [3,0;0,3];
+A7 = diag([3 3 3 3]);
+zero = [0,0;0,0];
+old_v = [0,0,0,0,0,0];
+
+for k =1:2000
+    x1(:,k) = [x(1,k);x(2,k)];
+    x2(:,k) = [x_dot_ff(1,k);x_dot_ff(2,k)];
+    x3(:,k) = [euler(1,k);euler(2,k)];
+    x4(:,k) = [eul_dot_ff(1,k);eul_dot_ff(2,k)];
+    x5(:,k) = [euler(3,k);x(3,k)];
+    x6(:,k) = [eul_dot_ff(3,k);x_dot_ff(3,k)];
+    
+    Rt = [cos(x5(1,k))*cos(x3(1,k)) cos(x5(1,k))*sin(x3(2,k))*sin(x3(1,k))-sin(x5(1,k))*cos(x3(1,k)) cos(x5(1,k))*sin(x3(2,k))*cos(x3(1,k))+sin(x5(1,k))*sin(x3(1,k));
+         sin(x5(1,k))*cos(x3(2,k)) sin(x5(1,k))*sin(x3(2,k))*sin(x3(1,k))+cos(x5(1,k))*cos(x3(1,k)) sin(x5(1,k))*sin(x3(2,k))*cos(x3(1,k))-cos(x5(1,k))*sin(x3(1,k));
+         -sin(x3(1,k))                cos(x3(2,k))*sin(x3(1,k))                                                 cos(x3(2,k))*cos(x3(1,k))];
+
+    Rr = [1,       0,                -sin(x3(2,k));
+           0,  cos(x3(1,k)), cos(x3(2,k))*sin(x3(1,k));
+           0, -sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k))];
+
+    J_phi = [0, 0, 0;
+             0, sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k));
+             0, cos(x3(1,k)), -sin(x3(1,k))*cos(x3(2,k))];
+
+    J_theta = [ 0, 0, -cos(x3(2,k));
+                0, 0, -sin(x3(2,k))*sin(x3(1,k));
+                0, 0, -cos(x3(1,k))*sin(x3(2,k))];
+
+    x_dot_ff = Rt*v(:,k);
+    eul_dot_ff = omega(:,k)/Rr;
+    
+    S = [0, -omega(3,k), omega(2,k);
+         omega(3,k), 0 , -omega(1,k);
+         -omega(2,k), omega(1,k), 0];
+    
+    f = -(Rt*Kt*Rt*x_dot_ff)./m - g;
+    f_e = -inv(It*Rr)*[It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*omega - S*(It*omega)]+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
+                                                                                                  -c*sin(euler(1,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
+                                                                                                  d*sin(euler(1,k))*sec(euler(2,k))*(F3(k)-F1(k))/Iy];
+    f0 = [f(1);f(2)];
+    phi_0 = [sin(x3(1,k)) ;
+             cos(x3(1,k))*sin(x3(2,k))];
+    j0 = [cos(x3(1,k)), 0;
+           -sin(x3(1,k))*sin(x3(2,k)), cos(x3(1,k))*cos(x3(2,k))];
+    g0 =((F1(k) + F2(k) + F3(k) + F4(k))/m).*[sin(x5(1,k)), cos(x5(1,k));
+                                              -cos(x5(1,k)), sin(x5(1,k))];
+
+    f1 = [f_e(1);f_e(2)];
+    g1 = [1/Ix, (sin(x3(1,k))*tan(x3(2,k)))/Iy;
+          0    , cos(x3(1,k))/Iy];
+    phi_1 = [d*(F2(k) - F4(k)); d*(F3(k)- F1(k))];                 
+    j1 = [0, d,0,-d;
+          -d,0,d, 0];
+
+    f2 = [f_e(3);f(3)];
+    g2 = [(cos(x3(1,k))*sec(x3(2,k)))/Iz, 0;
+           0, (cos(x3(1,k))*cos(x3(2,k)))/m];
+    phi_2 = [c*(F1(k) - F2(k) + F3(k) - F4(k)); (F1(k) + F2(k) + F3(k) + F4(k))];
+    j2 = [c,-c,c,-c;
+          1, 1, 1, 1];
+
+    v1 = A1*(x1_des-x1(:,k)) + x1_ddes;
+
+    v2 = ((x1_des - x1(:,k)) + A2*(v1 - x2(:,k)) + v1_dot -f0)/g0;
+
+    v3 = (go.'*(v1-x2(:,k)) +A3* (v2 - phi_0) +v2_dot)/j0;
+
+    v4 = (j0.'*(v2 - phi_0) + A4*(v3 - x4) +v3_dot -f1)/g1;
+
+    v5 = A5*(x5_des - x5(:,k)) + x5_ddes;
+
+    v6 = ((x5_des - x5(:,k)) + A6*(v5 - x6(:,k)) +v5_dot -f2)/g2;
+
+    u = ([g1, zero;zero, g2].' * [v3-x4(:,k);v5-x6(:,k)] + [v4_dot;v6_dot]+ A7*[v4 - phi_1;v6 - phi_2])/([j1;j2]);
+    
+    v1_dot = (v1 - old_v(1))/dt;
+    v2_dot = (v2 - old_v(2))/dt;
+    v3_dot = (v3 - old_v(3))/dt;
+    v4_dot = (v4 - old_v(4))/dt;
+    v5_dot = (v5 - old_v(5))/dt;
+    v6_dot = (v6 - old_v(6))/dt;
+    
+    old_v=[v1,v2,v3,v4,v5,v6];
+    
+    F1(k+1) = u(1)*dt + F1(k);
+    F2(k+1) = u(2)*dt + F2(k);
+    F3(k+1) = u(3)*dt + F3(k);
+    F4(k+1) = u(4)*dt + F4(k);
+    
+    x2_dot = f0 + g0*phi_0;
+    x2(:,k+1) = x2_dot*dt + x2(:,k);
+    x1(:,k+1) = x2(:,k)*dt + x1(:,k);
+    
+    x4_dot = f1 + g1*phi_1;
+    x4(:,k+1) = x4_dot*dt + x4(:,k);
+    x3(:,k+1) = x4(:,k)*dt + x3(:,k);
+    
+    x6_dot = f2 + g2*phi_2;
+    x6(:,k+1) = x6_dot*dt + x6(:,k);
+    x5(:,k+1) = x6(:,k)*dt + x5(:,k);
+    
+    omega(:,k+1) = Rr*[x4(:,k+1);x6(1,k+1)];
+    v(:,k+1) = Rt*[x2(:,k+1);x5(2,k+1)];
+    
+end
