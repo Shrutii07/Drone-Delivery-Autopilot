@@ -4,13 +4,13 @@ clc
 
 %initial positons velocities
 x = [0;0;0];           % x, y, z fixed frame
-euler = [ 10;20;30];   % pitch,roll,yaw fixed frame
+euler = [10;20;30];   % pitch,roll,yaw fixed frame
 v = [2;0;1];           % trans vel body frame
 omega = [0;0;2];       % rot vel body frame
-F1 = 0;
-F2 = 0;
-F3 = 0;
-F4 = 0;
+F1 = 10;
+F2 = 10;
+F3 = 10;
+F4 = 10;
 
 %desired
 x_des = [1;2;3];  %fixed frame
@@ -42,23 +42,35 @@ A7 = diag([3 3 3 3]);
 zero = [0,0;0,0];
 old_v = [0,0,0,0,0,0];
 
+v1_dot = [0;0];
+v2_dot = [0;0];
+v3_dot = [0;0];
+v4_dot = [0;0];
+v5_dot = [0;0];
+v6_dot = [0;0];
+dt = 0.001;
 for k =1:2000
+
+    
+    Rt = [cos(euler(3,k))*cos(euler(1,k)) cos(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))-sin(euler(3,k))*cos(euler(1,k)) cos(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))+sin(euler(3,k))*sin(euler(1,k));
+         sin(euler(3,k))*cos(euler(2,k)) sin(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))+cos(euler(3,k))*cos(euler(1,k)) sin(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))-cos(euler(3,k))*sin(euler(1,k));
+         -sin(euler(1,k))                cos(euler(2,k))*sin(euler(1,k))                                                 cos(euler(2,k))*cos(euler(1,k))];
+
+    Rr = [1,       0,                -sin(euler(2,k));
+           0,  cos(euler(1,k)), cos(euler(2,k))*sin(euler(1,k));
+           0, -sin(euler(1,k)), cos(euler(1,k))*cos(euler(2,k))];
+
+    x_dot_ff = Rt*v(:,k);
+    eul_dot_ff = inv(Rr)*omega(:,k);
+
     x1(:,k) = [x(1,k);x(2,k)];
     x2(:,k) = [x_dot_ff(1,k);x_dot_ff(2,k)];
     x3(:,k) = [euler(1,k);euler(2,k)];
     x4(:,k) = [eul_dot_ff(1,k);eul_dot_ff(2,k)];
     x5(:,k) = [euler(3,k);x(3,k)];
     x6(:,k) = [eul_dot_ff(3,k);x_dot_ff(3,k)];
-    
-    Rt = [cos(x5(1,k))*cos(x3(1,k)) cos(x5(1,k))*sin(x3(2,k))*sin(x3(1,k))-sin(x5(1,k))*cos(x3(1,k)) cos(x5(1,k))*sin(x3(2,k))*cos(x3(1,k))+sin(x5(1,k))*sin(x3(1,k));
-         sin(x5(1,k))*cos(x3(2,k)) sin(x5(1,k))*sin(x3(2,k))*sin(x3(1,k))+cos(x5(1,k))*cos(x3(1,k)) sin(x5(1,k))*sin(x3(2,k))*cos(x3(1,k))-cos(x5(1,k))*sin(x3(1,k));
-         -sin(x3(1,k))                cos(x3(2,k))*sin(x3(1,k))                                                 cos(x3(2,k))*cos(x3(1,k))];
-
-    Rr = [1,       0,                -sin(x3(2,k));
-           0,  cos(x3(1,k)), cos(x3(2,k))*sin(x3(1,k));
-           0, -sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k))];
-
-    J_phi = [0, 0, 0;
+   
+     J_phi = [0, 0, 0;
              0, sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k));
              0, cos(x3(1,k)), -sin(x3(1,k))*cos(x3(2,k))];
 
@@ -66,8 +78,6 @@ for k =1:2000
                 0, 0, -sin(x3(2,k))*sin(x3(1,k));
                 0, 0, -cos(x3(1,k))*sin(x3(2,k))];
 
-    x_dot_ff = Rt*v(:,k);
-    eul_dot_ff = omega(:,k)/Rr;
     
     S = [0, -omega(3,k), omega(2,k);
          omega(3,k), 0 , -omega(1,k);
@@ -101,17 +111,17 @@ for k =1:2000
 
     v1 = A1*(x1_des-x1(:,k)) + x1_ddes;
 
-    v2 = ((x1_des - x1(:,k)) + A2*(v1 - x2(:,k)) + v1_dot -f0)/g0;
+    v2 = inv(g0)*((x1_des - x1(:,k)) + A2*(v1 - x2(:,k)) + v1_dot -f0);
 
-    v3 = (go.'*(v1-x2(:,k)) +A3* (v2 - phi_0) +v2_dot)/j0;
+    v3 = inv(j0)*(g0.'*(v1-x2(:,k)) +A3* (v2 - phi_0) +v2_dot);
 
-    v4 = (j0.'*(v2 - phi_0) + A4*(v3 - x4) +v3_dot -f1)/g1;
+    v4 = inv(g1)*(j0.'*(v2 - phi_0) + A4*(v3 - x4) +v3_dot -f1);
 
     v5 = A5*(x5_des - x5(:,k)) + x5_ddes;
 
-    v6 = ((x5_des - x5(:,k)) + A6*(v5 - x6(:,k)) +v5_dot -f2)/g2;
+    v6 = inv(g2)*((x5_des - x5(:,k)) + A6*(v5 - x6(:,k)) +v5_dot -f2);
 
-    u = ([g1, zero;zero, g2].' * [v3-x4(:,k);v5-x6(:,k)] + [v4_dot;v6_dot]+ A7*[v4 - phi_1;v6 - phi_2])/([j1;j2]);
+    u = inv([j1;j2])*([g1, zero; zero, g2].' * [v3-x4(:,k);v5-x6(:,k)] + [v4_dot;v6_dot]+ A7*[v4 - phi_1;v6 - phi_2]);
     
     v1_dot = (v1 - old_v(1))/dt;
     v2_dot = (v2 - old_v(2))/dt;
@@ -141,8 +151,7 @@ for k =1:2000
     
     x(:,k+1) = [x1(:,k+1);x5(2,k+1)];
     euler(:,k+1)= [x3(:,k+1);x5(1,k+1)];
-   
+    
     omega(:,k+1) = Rr*[x4(:,k+1);x6(1,k+1)];
     v(:,k+1) = Rt*[x2(:,k+1);x5(2,k+1)];
-    
 end
