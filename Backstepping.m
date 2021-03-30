@@ -4,9 +4,9 @@ clc
 
 %initial positons velocities
 x = [0;0;0];           % x, y, z fixed frame
-euler = [10;20;30];   % pitch,roll,yaw fixed frame
+euler = [10;20;30]*pi/180;   % pitch,roll,yaw fixed frame
 v = [2;0;1];           % trans vel body frame
-omega = [0;0;2];       % rot vel body frame
+omega = [0;0;0];       % rot vel body frame
 F1 = 10;
 F2 = 10;
 F3 = 10;
@@ -15,7 +15,7 @@ F4 = 10;
 %desired
 x_des = [1;2;3];  %fixed frame
 x_ddes = [0;0;4];  
-euler_des = [0;0;60];
+euler_des = [0;0;60]*pi/180;
 euler_ddes = [0;0;0];   
 x1_des = [x_des(1);x_des(2)];
 x1_ddes = [ x_ddes(1);x_ddes(2)];
@@ -48,7 +48,7 @@ v3_dot = [0;0];
 v4_dot = [0;0];
 v5_dot = [0;0];
 v6_dot = [0;0];
-dt = 0.001;
+dt = 0.01;
 for k =1:2000
 
     
@@ -60,8 +60,8 @@ for k =1:2000
            0,  cos(euler(1,k)), cos(euler(2,k))*sin(euler(1,k));
            0, -sin(euler(1,k)), cos(euler(1,k))*cos(euler(2,k))];
 
-    x_dot_ff = Rt*v(:,k);
-    eul_dot_ff = inv(Rr)*omega(:,k);
+    x_dot_ff(:,k) = Rt*v(:,k);                       
+    eul_dot_ff(:,k) = inv(Rr)*omega(:,k);
 
     x1(:,k) = [x(1,k);x(2,k)];
     x2(:,k) = [x_dot_ff(1,k);x_dot_ff(2,k)];
@@ -71,8 +71,8 @@ for k =1:2000
     x6(:,k) = [eul_dot_ff(3,k);x_dot_ff(3,k)];
    
      J_phi = [0, 0, 0;
-             0, sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k));
-             0, cos(x3(1,k)), -sin(x3(1,k))*cos(x3(2,k))];
+             0, -sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k));
+             0, -cos(x3(1,k)), -sin(x3(1,k))*cos(x3(2,k))];
 
     J_theta = [ 0, 0, -cos(x3(2,k));
                 0, 0, -sin(x3(2,k))*sin(x3(1,k));
@@ -83,7 +83,7 @@ for k =1:2000
          omega(3,k), 0 , -omega(1,k);
          -omega(2,k), omega(1,k), 0];
     
-    f = -(Rt*Kt*Rt*x_dot_ff)./m - g;
+    f = -(Rt*Kt*Rt.'*x_dot_ff)./m - [0 0 g]';          % G matrix
     f_e = -inv(It*Rr)*[It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*omega - S*(It*omega)]+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   -c*sin(euler(1,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   d*sin(euler(1,k))*sec(euler(2,k))*(F3(k)-F1(k))/Iy];
@@ -115,7 +115,7 @@ for k =1:2000
 
     v3 = inv(j0)*(g0.'*(v1-x2(:,k)) +A3* (v2 - phi_0) +v2_dot);
 
-    v4 = inv(g1)*(j0.'*(v2 - phi_0) + A4*(v3 - x4) +v3_dot -f1);
+    v4 = inv(g1)*(j0.'*(v2 - phi_0) + A4*(v3 - x4(:,k)) +v3_dot -f1);           %%% change x4 to x4(:,k)
 
     v5 = A5*(x5_des - x5(:,k)) + x5_ddes;
 
@@ -155,3 +155,11 @@ for k =1:2000
     omega(:,k+1) = Rr*[x4(:,k+1);x6(1,k+1)];
     v(:,k+1) = Rt*[x2(:,k+1);x5(2,k+1)];
 end
+
+t = 0:0.01:20;
+%numel(t)
+figure(1)
+plot(t,x(1,:),t,x(2,:),t,x(3,:));
+legend("x","y","z")
+xlabel("time (s)")
+ylabel("location (m)")
