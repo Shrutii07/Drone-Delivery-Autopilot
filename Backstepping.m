@@ -177,7 +177,6 @@ function R = trans_mat_eul(theta)
     phi = theta(1,1);
     th = theta(2,1);
 
-%transformation matrix for body to inertial - angular quantities
   R = [ 1,       0,           -sin(th);
         0,  cos(phi), cos(th)*sin(phi);
         0, -sin(phi), cos(phi)*cos(th)];
