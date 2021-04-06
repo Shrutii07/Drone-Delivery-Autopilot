@@ -80,7 +80,7 @@ for k =1:2000
          -omega(2,k), omega(1,k), 0];
     
     f = -(Rt*Kt*Rt.'*x_dot_ff)./m - [0 0 g]';          % G matrix
-    f_e = -(It*Rr)\(It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*omega(:,k) - S*(It*omega(:,k)))+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
+    f_e = -(It*Rr)\(It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*Rr*eul_dot_ff - cross((Rr*eul_dot_ff),(It*Rr*eul_dot_ff)))+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   -c*sin(euler(1,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   d*sin(euler(1,k))*sec(euler(2,k))*(F3(k)-F1(k))/Iy];
 f
@@ -177,6 +177,7 @@ function R = trans_mat_eul(theta)
     phi = theta(1,1);
     th = theta(2,1);
 
+%transformation matrix for body to inertial - angular quantities
   R = [ 1,       0,           -sin(th);
         0,  cos(phi), cos(th)*sin(phi);
         0, -sin(phi), cos(phi)*cos(th)];
@@ -192,4 +193,15 @@ function R = trans_mat_vel(theta)
          sin(psi)*cos(th),  sin(phi)*sin(th)*sin(psi)+cos(psi)*cos(phi), sin(th)*sin(psi)*cos(phi)-cos(psi)*sin(phi);
          -sin(phi),         cos(th)*sin(phi)                           , cos(phi)*cos(th)];
     
+end
+
+function H = cross(a,b)
+ax = a(1,1);
+ay = a(2,1);
+az = a(3,1);
+
+R = [0, -az, ay;
+     az, 0  -ax;
+     -ay, ax, 0];
+H = R*b;
 end
