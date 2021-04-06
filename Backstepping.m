@@ -3,19 +3,19 @@ clear all
 clc 
 
 %initial positons velocities
-x = [0;0;0];           % x, y, z fixed frame
-euler = [0;0;30]*pi/180;   % pitch,roll,yaw fixed frame
+x = [0;2;0];           % x, y, z fixed frame
+euler = [10;0;30];   % pitch,roll,yaw fixed frame
 v = [0;0;0];           % trans vel body frame
 omega = [0;0;0];       % rot vel body frame
-F1 = 5;
-F2 = 5;
-F3 = 5;
-F4 = 5;
+F1 = 1000;
+F2 = 500;
+F3 = 500;
+F4 = 500;
 
 %desired
 x_des = [1;2;3];  %fixed frame
 x_ddes = [0;0;0];  
-euler_des = [0;0;60]*pi/180;
+euler_des = [0;0;60];
 euler_ddes = [0;0;0];   
 x1_des = [x_des(1);x_des(2)];
 x1_ddes = [ x_ddes(1);x_ddes(2)];
@@ -49,28 +49,24 @@ v4_dot = [0;0];
 v5_dot = [0;0];
 v6_dot = [0;0];
 dt = 0.01;
+
 for k =1:2000
+    if k==1
+        Rr = trans_mat_eul(euler(:,k));
+        Rt = trans_mat_vel(euler(:,k)); 
+    end
 
+    eul_dot_ff = inv(Rr)*omega(:,k);
+    x_dot_ff = Rt*v(:,k);
     
-    Rt = [cos(euler(3,k))*cos(euler(1,k)) cos(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))-sin(euler(3,k))*cos(euler(1,k)) cos(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))+sin(euler(3,k))*sin(euler(1,k));
-         sin(euler(3,k))*cos(euler(2,k)) sin(euler(3,k))*sin(euler(2,k))*sin(euler(1,k))+cos(euler(3,k))*cos(euler(1,k)) sin(euler(3,k))*sin(euler(2,k))*cos(euler(1,k))-cos(euler(3,k))*sin(euler(1,k));
-         -sin(euler(1,k))                cos(euler(2,k))*sin(euler(1,k))                                                 cos(euler(2,k))*cos(euler(1,k))];
-
-    Rr = [1,       0,                -sin(euler(2,k));
-           0,  cos(euler(1,k)), cos(euler(2,k))*sin(euler(1,k));
-           0, -sin(euler(1,k)), cos(euler(1,k))*cos(euler(2,k))];
-
-    x_dot_ff = Rt*v(:,k);                       
-    eul_dot_ff = Rr\omega(:,k);
-
     x1(:,k) = [x(1,k);x(2,k)];
     x2(:,k) = [x_dot_ff(1);x_dot_ff(2)];
     x3(:,k) = [euler(1,k);euler(2,k)];
     x4(:,k) = [eul_dot_ff(1);eul_dot_ff(2)];
     x5(:,k) = [euler(3,k);x(3,k)];
     x6(:,k) = [eul_dot_ff(3);x_dot_ff(3)];
-   
-     J_phi = [0, 0, 0;
+
+    J_phi = [0, 0, 0;
              0, -sin(x3(1,k)), cos(x3(1,k))*cos(x3(2,k));
              0, -cos(x3(1,k)), -sin(x3(1,k))*cos(x3(2,k))];
 
@@ -84,10 +80,12 @@ for k =1:2000
          -omega(2,k), omega(1,k), 0];
     
     f = -(Rt*Kt*Rt.'*x_dot_ff)./m - [0 0 g]';          % G matrix
-    f_e = -(It*Rr)\[It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*omega(:,k) - S*(It*omega(:,k))]+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
+    f_e = -(It*Rr)\(It*(J_phi*x4(1,k) +J_theta*x4(2,k))*eul_dot_ff - Kr*omega(:,k) - S*(It*omega(:,k)))+[c*cos(euler(1,k))*tan(euler(2,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   -c*sin(euler(1,k))*(F1(k)-F2(k)+F3(k)-F4(k))/Iz;
                                                                                                   d*sin(euler(1,k))*sec(euler(2,k))*(F3(k)-F1(k))/Iy];
-    f0 = [f(1);f(2)];
+f
+f_e
+f0 = [f(1);f(2)];
     phi_0 = [sin(x3(1,k)) ;
              cos(x3(1,k))*sin(x3(2,k))];
     j0 = [cos(x3(1,k)), 0;
@@ -108,7 +106,15 @@ for k =1:2000
     phi_2 = [c*(F1(k) - F2(k) + F3(k) - F4(k)); (F1(k) + F2(k) + F3(k) + F4(k))];
     j2 = [c,-c,c,-c;
           1, 1, 1, 1];
-
+phi_0
+j0
+g0
+g1
+phi_1
+j1
+g2
+phi_2
+j2
     v1 = A1*(x1_des-x1(:,k)) + x1_ddes;
 
     v2 = (g0)\((x1_des - x1(:,k)) + A2*(v1 - x2(:,k)) + v1_dot -f0);
@@ -152,6 +158,9 @@ for k =1:2000
     x(:,k+1) = [x1(:,k+1);x5(2,k+1)];
     euler(:,k+1)= [x3(:,k+1);x5(1,k+1)];
     
+    Rr = trans_mat_eul([x3(:,k+1);x5(1,k+1)]);
+    Rt = trans_mat_vel([x3(:,k+1);x5(1,k+1)]);   
+    
     omega(:,k+1) = Rr*[x4(:,k+1);x6(1,k+1)];
     v(:,k+1) = Rt*[x2(:,k+1);x5(2,k+1)];
 end
@@ -160,6 +169,28 @@ t = 0:0.01:20;
 %numel(t)
 figure(1)
 plot(t,x(1,:),t,x(2,:),t,x(3,:));
-legend("x","y","z")
-xlabel("time (s)")
-ylabel("location (m)")
+legend("x","y","z");
+xlabel("time (s)");
+ylabel("location (m)");
+
+function R = trans_mat_eul(theta)
+    phi = theta(1,1);
+    th = theta(2,1);
+
+%transformation matrix for body to inertial - angular quantities
+  R = [ 1,       0,           -sin(th);
+        0,  cos(phi), cos(th)*sin(phi);
+        0, -sin(phi), cos(phi)*cos(th)];
+    
+end
+
+function R = trans_mat_vel(theta)
+    phi = theta(1,1);
+    th = theta(2,1);
+    psi = theta(3,1);
+    
+    R = [cos(phi)*cos(psi), cos(psi)*sin(th)*sin(phi)-sin(psi)*cos(phi), cos(phi)*sin(th)*cos(psi)+sin(phi)*sin(psi);
+         sin(psi)*cos(th),  sin(phi)*sin(th)*sin(psi)+cos(psi)*cos(phi), sin(th)*sin(psi)*cos(phi)-cos(psi)*sin(phi);
+         -sin(phi),         cos(th)*sin(phi)                           , cos(phi)*cos(th)];
+    
+end
