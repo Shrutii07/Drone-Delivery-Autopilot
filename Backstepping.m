@@ -196,12 +196,12 @@ function R = trans_mat_vel(theta)
 end
 
 function H = cross(a,b)
-ax = a(1,1);
-ay = a(2,1);
-az = a(3,1);
+    ax = a(1,1);
+    ay = a(2,1);
+    az = a(3,1);
 
-R = [0, -az, ay;
-     az, 0  -ax;
-     -ay, ax, 0];
-H = R*b;
+    R = [0, -az, ay;
+         az, 0  -ax;
+         -ay, ax, 0];
+    H = R*b;
 end
