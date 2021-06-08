@@ -25,7 +25,7 @@ c6 = droneparam.c6;
 
 e_1 = phi_d(1) - phi;
 e_2 = phi_dot - phi_d(2) - c1*e_1;
-U2 = Ix *(e_1 + (theta_dot * si_dot * (Iz - Iy)/Ix) - (zeta2/Ix) + phi_d(3) - c2*e_2 + c1(phi_d(2)- phi_dot))/l; 
+U2 = Ix *(e_1 + (theta_dot * si_dot * (Iz - Iy)/Ix) - (zeta2/Ix) + phi_d(3) - c2*e_2 + c1*(phi_d(2)- phi_dot))/l; 
 
 e_3 = theta_d(1)  - theta;
 e_4 = theta_dot -theta_d(2) - c3*e_3;
