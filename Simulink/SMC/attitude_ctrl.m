@@ -9,13 +9,17 @@ zeta2 = droneparam.zeta2;
 zeta3 = droneparam.zeta3;
 zeta4 = droneparam.zeta4;
 
+c1 = droneparam.c1;
+c3 = droneparam.c3;
+c5 = droneparam.c5;
+
 phi_dot = ang_vel(1);
 theta_dot = ang_vel(2);
 si_dot = ang_vel(3);
 
-U2_nom = Ix * ((theta_dot * si_dot * (Iz - Iy)/Ix) + lembda * (phi_d(2) - phi_dot) + phi_d(3)) / l;
-U3_nom = Iy * ((phi_dot * si_dot * (Ix - Iz)/Iy) + lembda * (theta_d(2) - theta_dot) + theta_d(3)) / l;
-U4_nom = Iz * ((theta_dot * phi_dot * (Iy - Ix)/Iz) + lembda * (si_d(2) - si_dot) + si_d(3));
+U2_nom = Ix * ((theta_dot * si_dot * (Iz - Iy)/Ix) + c1*lembda * (phi_d(2) - phi_dot) + phi_d(3)) / l;
+U3_nom = Iy * ((phi_dot * si_dot * (Ix - Iz)/Iy) + c3*lembda * (theta_d(2) - theta_dot) + theta_d(3)) / l;
+U4_nom = Iz * ((theta_dot * phi_dot * (Iy - Ix)/Iz) + c5*lembda * (si_d(2) - si_dot) + si_d(3));
 
 zeta_hat = 0.1;
 F2 = zeta2 - zeta_hat;

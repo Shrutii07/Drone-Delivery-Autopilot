@@ -8,7 +8,9 @@ theta = orientation(2);
 lembda = droneparam.lembda;
 zeta1 = droneparam.zeta1;
 
-U1_nom = m * ( z_d(3) + lembda * z_d(2) + ((kf/m) - lembda) * z_dot + g ) / cos(phi)*cos(theta);
+c7 = droneparam.c7;
+
+U1_nom = m * ( z_d(3) + c7*lembda * z_d(2) + c7*((kf/m) - lembda) * z_dot + g ) / cos(phi)*cos(theta);
 
 kf_hat = 1;
 zeta_hat = 0.1;

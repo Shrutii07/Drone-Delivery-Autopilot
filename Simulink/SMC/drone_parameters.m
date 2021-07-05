@@ -52,7 +52,7 @@ droneparam.zeta4 = 0;
 
 
 % Backstepping
-droneparam.c1 = 2; droneparam.c2 = 2;
-droneparam.c3 = 2; droneparam.c4 = 2;
-droneparam.c5 = 2; droneparam.c6 = 2; 
-droneparam.c7 = 2; droneparam.c8 = 2;
+droneparam.c1 = 6; droneparam.c2 = 4;
+droneparam.c3 = 5.2; droneparam.c4 = 3;
+droneparam.c5 = 7; droneparam.c6 = 4.9; 
+droneparam.c7 = 6.125; droneparam.c8 = 31.5;
