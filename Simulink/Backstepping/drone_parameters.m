@@ -29,7 +29,7 @@ Ts = 0.002; % Fixed Time step
 x_d = 20;   y_d = 65;   z_d = 50;   si_d = 1*pi/180;
 
 % PID gain for Trajectory generation
-kp_d = 7;   kd_d = 8;   ki_d = 0.1;
+kp_d = 15;   kd_d = 8;   ki_d = 0.1;
 
 % droneparam.zeta1 = -1 + 2*rand(1);
 % droneparam.zeta2 = -1 + 2*rand(1);
@@ -43,7 +43,7 @@ droneparam.zeta4 = 0;
 
 
 % Backstepping
-droneparam.c1 = 2; droneparam.c2 = 2;
-droneparam.c3 = 2; droneparam.c4 = 2;
-droneparam.c5 = 2; droneparam.c6 = 2; 
-droneparam.c7 = 2; droneparam.c8 = 2;
+droneparam.c1 = 6; droneparam.c2 = 4;
+droneparam.c3 = 5.2; droneparam.c4 = 3;
+droneparam.c5 = 7; droneparam.c6 = 4.9; 
+droneparam.c7 = 6.125; droneparam.c8 = 31.5;
