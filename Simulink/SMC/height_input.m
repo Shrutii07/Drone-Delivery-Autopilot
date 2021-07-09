@@ -23,8 +23,20 @@ P_hat = -pos(3) + z_d(1);
 dP_hat = -z_dot + z_d(2);
 s = P_hat  + lembda * dP_hat;
 
-U1_dis = k1 * sign(s);
+U1_dis = k1*sat(s) + k1*s;
 
 U1 = U1_nom + U1_dis;
 
+end
+
+function Y=sat(s)
+% % sat is the saturation function with unit limits and unit slope.
+%     if s>1
+%         Y=1;
+%     elseif s<-1 
+%         Y=-1;
+%     else 
+%         Y=s;
+%     end
+    Y = s./(abs(s)+0.001);
 end
