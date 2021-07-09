@@ -56,3 +56,8 @@ droneparam.c1 = 6; droneparam.c2 = 4;
 droneparam.c3 = 5.2; droneparam.c4 = 3;
 droneparam.c5 = 7; droneparam.c6 = 4.9; 
 droneparam.c7 = 6.125; droneparam.c8 = 31.5;
+
+% droneparam.c1 = 1; droneparam.c2 = 1;
+% droneparam.c3 = 1; droneparam.c4 = 1;
+% droneparam.c5 = 1; droneparam.c6 = 1; 
+% droneparam.c7 = 1; droneparam.c8 = 1;
